@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=util-linux
-PKG_VERSION:=2.30.2
-PKG_RELEASE:=2
+PKG_VERSION:=2.31.1
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=@KERNEL/linux/utils/$(PKG_NAME)/v2.30
-PKG_HASH:=7b5be5489e9b5b7177832836467aba1c87bf0e9bcbcb5a6f35d76cd4782589dc
+PKG_SOURCE_URL:=@KERNEL/linux/utils/$(PKG_NAME)/v2.31
+PKG_HASH:=1a51b16fa9cd51d26ef9ab52d2f1de12403b810fc8252bf7d478df91b3cddf11
 PKG_CPE_ID:=cpe:/a:kernel:util-linux
 
 PKG_LICENSE:=GPL-2.0
@@ -474,14 +474,15 @@ endef
 
 CONFIGURE_ARGS += \
 	--disable-use-tty-group \
-	--disable-rpath \
+	--disable-rpath		\
 	--disable-tls		\
 	--disable-sulogin	\
 	--without-python	\
 	--without-udev		\
 	--without-readline	\
 	--disable-more		\
-	--with-ncursesw
+	--with-ncursesw		\
+	--disable-makeinstall-chown
 
 TARGET_CFLAGS += $(FPIC) -std=gnu99
 
