@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=openvpn
 
 PKG_VERSION:=2.4.5
-PKG_RELEASE:=3
+PKG_RELEASE:=4
 
 PKG_SOURCE_URL:=\
 	https://build.openvpn.net/downloads/releases/ \
@@ -72,6 +72,11 @@ CONFIGURE_VARS += \
 	ROUTE=/sbin/route \
 	IPROUTE=/sbin/ip \
 	NETSTAT=/sbin/netstat
+
+ifeq ($(CONFIG_OPENVPN_$(BUILD_VARIANT)_OPTIMIZE_SPEED),y)
+  TARGET_CFLAGS := $(filter-out -O%,$(TARGET_CFLAGS)) -O3 -flto
+  TARGET_LDFLAGS += -flto
+endif
 
 TARGET_CFLAGS += -ffunction-sections -fdata-sections
 TARGET_LDFLAGS += -Wl,--gc-sections
