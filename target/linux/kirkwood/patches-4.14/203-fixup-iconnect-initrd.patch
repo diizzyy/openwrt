@@ -1,0 +1,13 @@
+diff --git a/arch/arm/boot/dts/kirkwood-iconnect.dts b/arch/arm/boot/dts/kirkwood-iconnect.dts
+index 4a512d8..9b8709c 100644
+--- a/arch/arm/boot/dts/kirkwood-iconnect.dts
++++ b/arch/arm/boot/dts/kirkwood-iconnect.dts
+@@ -16,8 +16,6 @@
+ 	chosen {
+ 		bootargs = "console=ttyS0,115200n8 earlyprintk";
+ 		stdout-path = &uart0;
+-		linux,initrd-start = <0x4500040>;
+-		linux,initrd-end   = <0x4800000>;
+ 	};
+ 
+ 	ocp@f1000000 {
