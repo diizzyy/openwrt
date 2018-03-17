@@ -2,11 +2,11 @@ if PACKAGE_openvpn-nossl
 
 config OPENVPN_nossl_ENABLE_LZO
 	bool "Enable LZO compression support"
-	default y
+	default n
 
 config OPENVPN_nossl_ENABLE_LZ4
 	bool "Enable LZ4 compression support"
-	default y
+	default n
 
 config OPENVPN_nossl_ENABLE_SERVER
 	bool "Enable server support (otherwise only client mode is support)"
