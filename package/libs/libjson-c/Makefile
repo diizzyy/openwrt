@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=json-c
-PKG_VERSION:=0.13
+PKG_VERSION:=0.13.1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-nodoc.tar.gz
 PKG_SOURCE_URL:=https://s3.amazonaws.com/json-c_releases/releases/
-PKG_HASH:=8572760646e9d23ee68f967ca62fa134a97b931665fd9af562192b7788c95a06
+PKG_HASH:=94a26340c0785fcff4f46ff38609cf84ebcd670df0c8efd75d039cc951d80132
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_SOURCE_SUBDIR)
 
@@ -28,7 +28,7 @@ PKG_MAINTAINER:=Felix Fietkau <nbd@nbd.name>
 
 include $(INCLUDE_DIR)/package.mk
 
-TARGET_CFLAGS += $(FPIC) -Wno-implicit-fallthrough
+TARGET_CFLAGS += $(FPIC)
 
 define Package/libjson-c
   SECTION:=libs
