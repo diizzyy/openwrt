@@ -12,6 +12,94 @@ PIDCOUNT=0
 EXTRA_COMMANDS="killclients"
 EXTRA_HELP="	killclients Kill ${NAME} processes except servers and yourself"
 
+_dropbearkey()
+{
+	/usr/bin/dropbearkey "$@" 0<&- 1>&- 2>&-
+}
+
+# $1 - host key file name
+hk_verify()
+{
+	[ -f "$1" ] || return 1
+	[ -s "$1" ] || return 2
+	_dropbearkey -y -f "$1" || return 3
+	return 0
+}
+
+# $1 - hk_verify() return code
+hk_errmsg()
+{
+	case "$1" in
+	0) ;;
+	1) echo "file does not exist" ;;
+	2) echo "file has zero length" ;;
+	3) echo "file is not valid host key or not supported" ;;
+	*) echo "unknown error" ;;
+	esac
+}
+
+# $1 - config option
+# $2 - host key file name
+hk_config()
+{
+	local x m
+	hk_verify "$2"; x=$?
+	case "$x" in
+	0)	procd_append_param command -r "$2"
+		;;
+	*)	m=$(hk_errmsg "$x")
+		logger -t "${NAME}" -p daemon.warn \
+		  "option '$1', value '$2': $m, skipping"
+		;;
+	esac
+}
+
+# $1 - host key file name
+hk_config__keyfile()
+{
+	hk_config 'keyfile' "$1"
+}
+
+hk_generate_as_needed()
+{
+	local kdir kgen ktype tdir kcount tfile tlock
+	kdir='/etc/dropbear'
+
+	kgen=''
+	for ktype in ecdsa rsa; do
+		hk_verify "${kdir}/dropbear_${ktype}_host_key" && continue
+
+		kgen="${kgen} ${ktype}"
+	done
+
+	[ -z "${kgen}" ] && return
+
+	tdir=$(mktemp -d); chmod 0700 "${tdir}"
+
+	kcount=0
+	for ktype in ${kgen}; do
+		tfile="${tdir}/dropbear_${ktype}_host_key"
+
+		if ! _dropbearkey -t ${ktype} -f "${tfile}"; then
+			# unsupported key type
+			rm -f "${tfile}"
+			continue
+		fi
+
+		kcount=$((kcount+1))
+	done
+
+	if [ ${kcount} -ne 0 ]; then
+		tlock='/tmp/.switch2jffs'
+		lock "${tlock}"
+		mkdir -p "${kdir}"; chmod 0700 "${kdir}"; chown root "${kdir}"
+		mv -f "${tdir}/"* "${kdir}/"
+		lock -u "${tlock}"
+	fi
+
+	rm -rf "${tdir}"
+}
+
 append_ports()
 {
 	local ipaddrs="$1"
@@ -25,20 +113,6 @@ append_ports()
 	for addr in $ipaddrs; do
 		procd_append_param command -p "$addr:$port"
 	done
-}
-
-warn_absent_host_key() {
-	logger -t ${NAME} -p daemon.warn \
-		"option '$1': file '$2' does not exist or empty, skipping"
-}
-
-append_host_keys()
-{
-	if [ -s "$1" ]; then
-		procd_append_param command -r "$1"
-	else
-		warn_absent_host_key 'keyfile' "$1"
-	fi
 }
 
 validate_section_dropbear()
@@ -97,13 +171,10 @@ dropbear_instance()
 			"option 'rsakeyfile' is considered to be deprecated" \
 			"and will be removed in future releases," \
 			"use 'keyfile' instead"
-		if [ -s "${rsakeyfile}" ]; then
-			procd_append_param command -r "${rsakeyfile}"
-		else
-			warn_absent_host_key 'rsakeyfile' "${rsakeyfile}"
-		fi
+
+		hk_config 'rsakeyfile' "${rsakeyfile}"
 	fi
-	config_list_foreach "$1" "keyfile" append_host_keys
+	config_list_foreach "$1" "keyfile" hk_config__keyfile
 	[ -n "${BannerFile}" ] && procd_append_param command -b "${BannerFile}"
 	append_ports "${ipaddrs}" "${Port}"
 	[ "${IdleTimeout}" -ne 0 ] && procd_append_param command -I "${IdleTimeout}"
@@ -116,44 +187,6 @@ dropbear_instance()
 	procd_close_instance
 }
 
-keytest()
-{
-	local res=0
-	local kcount=0
-	local ktype kfile
-	for ktype in rsa ecdsa; do
-		kfile=/etc/dropbear/dropbear_${ktype}_host_key
-		[ -f "$kfile" ] || continue
-		kcount=$((kcount+1))
-		[ -s "$kfile" ] || res=1
-	done
-	[ $kcount -eq 0 ] && res=1
-	return $res
-}
-
-keygen()
-{
-	local ktype kfile
-
-	mkdir -p /tmp/dropbear
-
-	for ktype in rsa ecdsa; do
-		kfile=dropbear/dropbear_${ktype}_host_key
-		[ -s "/tmp/$kfile" -o -s "/etc/$kfile" ] && continue
-		# generate missing keys
-		/usr/bin/dropbearkey -t $ktype -f /tmp/$kfile 2>&- >&- || \
-			rm /tmp/$kfile
-	done
-
-	lock /tmp/.switch2jffs
-	mkdir -p /etc/dropbear
-	chown root /etc/dropbear; chmod 0700 /etc/dropbear
-	mv /tmp/dropbear/dropbear_* /etc/dropbear/
-	lock -u /tmp/.switch2jffs
-
-	rm -rf /tmp/dropbear/
-}
-
 load_interfaces()
 {
 	config_get interface "$1" Interface
@@ -164,7 +197,7 @@ load_interfaces()
 
 start_service()
 {
-	keytest || keygen
+	hk_generate_as_needed
 
 	. /lib/functions.sh
 	. /lib/functions/network.sh
