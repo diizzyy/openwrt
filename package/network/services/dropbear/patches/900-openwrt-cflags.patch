@@ -1,0 +1,62 @@
+--- a/libtomcrypt/makefile_include.mk
++++ b/libtomcrypt/makefile_include.mk
+@@ -75,6 +75,13 @@ endif
+ 
+ LTC_CFLAGS += -Wno-type-limits
+ 
++ifdef OPENWRT
++  ifeq (-Os,$(filter -Os,$(CFLAGS)))
++    LTC_CFLAGS += -DLTC_SMALL_CODE
++  endif
++else
++  ### ! OPENWRT
++
+ ifdef LTC_DEBUG
+ $(info Debug build)
+ # compile for DEBUGGING (required for ccmalloc checking!!!)
+@@ -102,6 +109,9 @@ endif
+ endif # COMPILE_SMALL
+ endif # COMPILE_DEBUG
+ 
++  ### ! OPENWRT
++endif
++
+ 
+ ifneq ($(findstring clang,$(CC)),)
+ LTC_CFLAGS += -Wno-typedef-redefinition -Wno-tautological-compare -Wno-builtin-requires-header -Wno-missing-field-initializers
+--- a/libtommath/Makefile.in
++++ b/libtommath/Makefile.in
+@@ -24,10 +24,7 @@ coverage: LIBNAME:=-Wl,--whole-archive $
+ include $(srcdir)/makefile_include.mk
+ 
+ %.o: %.c
+-ifneq ($V,1)
+-	@echo "   * ${CC} $@"
+-endif
+-	${silent} ${CC} -c ${CFLAGS} $< -o $@
++	${CC} -c ${CFLAGS} $< -o $@
+ 
+ LCOV_ARGS=--directory .
+ 
+--- a/libtommath/makefile_include.mk
++++ b/libtommath/makefile_include.mk
+@@ -37,6 +37,9 @@ CFLAGS += -Wsystem-headers -Wdeclaration
+ CFLAGS += -Wstrict-prototypes -Wpointer-arith
+ endif
+ 
++ifndef OPENWRT
++  ### ! OPENWRT
++
+ ifdef COMPILE_DEBUG
+ #debug
+ CFLAGS += -g3
+@@ -58,6 +61,9 @@ endif
+ endif # COMPILE_SIZE
+ endif # COMPILE_DEBUG
+ 
++  ### ! OPENWRT
++endif
++
+ ifneq ($(findstring clang,$(CC)),)
+ CFLAGS += -Wno-typedef-redefinition -Wno-tautological-compare -Wno-builtin-requires-header
+ endif
