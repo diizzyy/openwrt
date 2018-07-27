@@ -13,7 +13,7 @@ config OPENSSL_WITH_EC2M
 config OPENSSL_WITH_DEPRECATED
 	bool
 	default y
-	prompt "Include deprecated APIs (There are several packages that need this.)"
+	prompt "Include deprecated APIs (See help for a list of packages that need this)"
 	help
 		Since openssl 1.1.0 is not supported yet, packages requiring this
 		option do not list it as a requirement.
@@ -51,17 +51,6 @@ config OPENSSL_ENGINE
 		This enables alternative cryptography implementations,
 		most commonly for interfacing with external crypto devices,
 		or supporting new/alternative ciphers and digests.
-
-config OPENSSL_ENGINE_AFALG
-	bool
-	depends on OPENSSL_ENGINE && !LINUX_3_18
-	select KERNEL_AIO
-	prompt "Enable acceleration support through AF_ALG engine"
-
-config OPENSSL_ENGINE_PADLOCK
-	bool
-	depends on OPENSSL_ENGINE
-	prompt "Enable VIA Padlock crypto hardware acceleration engine" if TARGET_x86
 
 config OPENSSL_ENGINE_DIGEST
 	bool

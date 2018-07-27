@@ -54,6 +54,8 @@ endif
 define Package/openssl/Default
   TITLE:=Open source SSL toolkit
   URL:=http://www.openssl.org/
+  SECTION:=libs
+  CATEGORY:=Libraries
 endef
 
 define Package/libopenssl/config
@@ -62,16 +64,14 @@ endef
 
 define Package/openssl/Default/description
 The OpenSSL Project is a collaborative effort to develop a robust,
-commercial-grade, full-featured, and Open Source toolkit implementing the Secure
-Sockets Layer (SSL v2/v3) and Transport Layer Security (TLS v1) protocols as well
-as a full-strength general purpose cryptography library.
+commercial-grade, full-featured, and Open Source toolkit implementing the
+Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols as well
+as a full-strength general-purpose cryptography library.
 endef
 
 define Package/libopenssl
 $(call Package/openssl/Default)
-  SECTION:=libs
   SUBMENU:=SSL
-  CATEGORY:=Libraries
   DEPENDS:=+OPENSSL_WITH_COMPRESSION:zlib
   TITLE+= (libraries)
   ABI_VERSION:=$(PKG_VERSION)
@@ -91,7 +91,7 @@ define Package/openssl-util
   TITLE+= (utility)
 endef
 
-define Package/libopenssl/conffiles
+define Package/openssl/conffiles
 /etc/ssl/openssl.cnf
 endef
 
@@ -100,9 +100,22 @@ $(call Package/openssl/Default/description)
 This package contains the OpenSSL command-line utility.
 endef
 
+define Package/libopenssl-afalg
+  $(call Package/openssl/Default)
+  SUBMENU:=SSL
+  TITLE:=AFALG hardware acceleration engine
+  DEPENDS:=libopenssl @OPENSSL_ENGINE +@KERNEL_AIO @!LINUX_3_18
+endef
+
+define Package/libopenssl-padlock
+  $(call Package/openssl/Default)
+  SUBMENU:=SSL
+  TITLE:=VIA Padlock hardware acceleration engine
+  DEPENDS:=libopenssl @OPENSSL_ENGINE @TARGET_x86
+endef
 
 OPENSSL_NO_CIPHERS:= no-idea no-mdc2 no-camellia no-whirlpool no-seed
-OPENSSL_OPTIONS:= shared no-err no-heartbeats
+OPENSSL_OPTIONS:= shared no-err
 
 ifdef CONFIG_OPENSSL_ENGINE
   ifdef CONFIG_OPENSSL_ENGINE_CRYPTO
@@ -111,10 +124,10 @@ ifdef CONFIG_OPENSSL_ENGINE
       OPENSSL_OPTIONS += -DUSE_CRYPTODEV_DIGESTS
     endif
   endif
-  ifndef CONFIG_OPENSSL_ENGINE_AFALG
+  ifndef CONFIG_PACKAGE_libopenssl-afalg
     OPENSSL_OPTIONS += no-afalgeng
   endif
-  ifndef CONFIG_OPENSSL_ENGINE_PADLOCK
+  ifndef CONFIG_PACKAGE_libopenssl-padlock
     OPENSSL_OPTIONS += no-hw-padlock
   endif
 else
@@ -190,12 +203,6 @@ define Build/Configure
 			$(OPENSSL_NO_CIPHERS) \
 			$(OPENSSL_OPTIONS) \
 	)
-	+$(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) \
-		CROSS_COMPILE="$(TARGET_CROSS)" \
-		MAKEDEPPROG="$(TARGET_CROSS)gcc" \
-		OPENWRT_OPTIMIZATION_FLAGS="$(TARGET_CFLAGS)" \
-		$(OPENSSL_MAKEFLAGS) \
-		depend
 endef
 
 TARGET_CFLAGS += $(FPIC) -I$(CURDIR)/include -ffunction-sections -fdata-sections
@@ -234,10 +241,6 @@ define Package/libopenssl/install
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libcrypto.so.* $(1)/usr/lib/
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libssl.so.* $(1)/usr/lib/
 	$(if $(CONFIG_OPENSSL_ENGINE),$(INSTALL_DIR) $(1)/usr/lib/engines-1.1)
-	$(if $(CONFIG_OPENSSL_ENGINE_AFALG),$(INSTALL_BIN) \
-		$(PKG_INSTALL_DIR)/usr/lib/engines-1.1/afalg.so $(1)/usr/lib/engines-1.1)
-	$(if $(CONFIG_OPENSSL_ENGINE_PADLOCK),$(INSTALL_BIN) \
-		$(PKG_INSTALL_DIR)/usr/lib/engines-1.1/padlock.so $(1)/usr/lib/engines-1.1)
 endef
 
 define Package/openssl-util/install
@@ -250,5 +253,18 @@ define Package/openssl-util/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/openssl $(1)/usr/bin/
 endef
 
+define Package/openssl-afalg/install
+	$(INSTALL_DIR) $(1)/usr/lib/engines-1.1
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/engines-1.1/afalg.so $(1)/usr/lib/engines-1.1
+endef
+
+define Package/openssl-padlock/install
+	$(INSTALL_DIR) $(1)/usr/lib/engines-1.1
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/engines-1.1/padlock.so $(1)/usr/lib/engines-1.1
+endef
+
+
 $(eval $(call BuildPackage,libopenssl))
+$(eval $(call BuildPackage,libopenssl-afalg))
+$(eval $(call BuildPackage,libopenssl-padlock))
 $(eval $(call BuildPackage,openssl-util))
