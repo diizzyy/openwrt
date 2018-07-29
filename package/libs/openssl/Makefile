@@ -8,8 +8,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openssl
-PKG_BASE:=1.1.0
-PKG_BUGFIX:=h
+PKG_BASE:=1.1.1
+PKG_BUGFIX:=-pre8
 PKG_VERSION:=$(PKG_BASE)$(PKG_BUGFIX)
 PKG_RELEASE:=1
 PKG_USE_MIPS16:=0
@@ -20,11 +20,10 @@ PKG_BUILD_PARALLEL:=0
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:= \
 	http://ftp.fi.muni.cz/pub/openssl/source/ \
-	http://ftp.linux.hr/pub/openssl/source/ \
-	http://gd.tuwien.ac.at/infosys/security/openssl/source/ \
-	http://www.openssl.org/source/ \
-	http://www.openssl.org/source/old/$(PKG_BASE)/
-PKG_HASH:=5835626cde9e99656585fc7aaa2302a73a7e1340bf8c14fd635a62c66802a517
+	http://artfiles.org/openssl.org/source/ \
+	ftp://ftp.pca.dfn.de/pub/tools/net/openssl/ \
+	https://www.openssl.org/source/
+PKG_HASH:=1205cd763dd92c910cc590658a5b0774599e8587d89d6debd948f242b949321e
 
 PKG_LICENSE:=OpenSSL
 PKG_LICENSE_FILES:=LICENSE
@@ -41,7 +40,19 @@ PKG_CONFIG_DEPENDS:= \
 	CONFIG_OPENSSL_WITH_DTLS \
 	CONFIG_OPENSSL_WITH_COMPRESSION \
 	CONFIG_OPENSSL_WITH_PSK \
+	CONFIG_OPENSSL_WITH_CMS \
 	CONFIG_OPENSSL_WITH_SRP \
+	CONFIG_OPENSSL_WITH_IDEA \
+	CONFIG_OPENSSL_WITH_CAMELLIA \
+	CONFIG_OPENSSL_WITH_MDC2 \
+	CONFIG_OPENSSL_WITH_WHIRLPOOL \
+	CONFIG_OPENSSL_WITH_SEED \
+	CONFIG_OPENSSL_WITH_RC2 \
+	CONFIG_OPENSSL_WITH_ARIA \
+	CONFIG_OPENSSL_WITH_SM234 \
+	CONFIG_OPENSSL_WITH_GOST \
+	CONFIG_OPENSSL_WITH_ASYNC \
+	CONFIG_OPENSSL_WITH_RFC3779 \
 	CONFIG_OPENSSL_OPTIMIZE_SPEED
 
 include $(INCLUDE_DIR)/package.mk
@@ -114,7 +125,6 @@ define Package/libopenssl-padlock
   DEPENDS:=libopenssl @OPENSSL_ENGINE @TARGET_x86
 endef
 
-OPENSSL_NO_CIPHERS:= no-idea no-mdc2 no-camellia no-whirlpool no-seed
 OPENSSL_OPTIONS:= shared no-err
 
 ifdef CONFIG_OPENSSL_ENGINE
@@ -160,8 +170,56 @@ ifndef CONFIG_OPENSSL_WITH_PSK
   OPENSSL_OPTIONS += no-psk
 endif
 
+ifndef CONFIG_OPENSSL_WITH_CMS
+  OPENSSL_OPTIONS += no-cms
+endif
+
 ifndef CONFIG_OPENSSL_WITH_SRP
   OPENSSL_OPTIONS += no-srp
+endif
+
+ifndef CONFIG_OPENSSL_WITH_IDEA
+  OPENSSL_OPTIONS += no-idea
+endif
+
+ifndef CONFIG_OPENSSL_WITH_CAMELLIA
+  OPENSSL_OPTIONS += no-camellia
+endif
+
+ifndef CONFIG_OPENSSL_WITH_MDC2
+  OPENSSL_OPTIONS += no-mdc2
+endif
+
+ifndef CONFIG_OPENSSL_WITH_WHIRLPOOL
+  OPENSSL_OPTIONS += no-whirlpool
+endif
+
+ifndef CONFIG_OPENSSL_WITH_ARIA
+  OPENSSL_OPTIONS += no-aria
+endif
+
+ifndef CONFIG_OPENSSL_WITH_SM234
+  OPENSSL_OPTIONS += no-sm2 no-sm3 no-sm4
+endif
+
+ifndef CONFIG_OPENSSL_WITH_SEED
+  OPENSSL_OPTIONS += no-seed
+endif
+
+ifndef CONFIG_OPENSSL_WITH_GOST
+  OPENSSL_OPTIONS += no-gost
+endif
+
+ifndef CONFIG_OPENSSL_WITH_ASYNC
+  OPENSSL_OPTIONS += no-async
+endif
+
+ifndef CONFIG_OPENSSL_WITH_RFC3779
+  OPENSSL_OPTIONS += no-rfc3779
+endif
+
+ifndef CONFIG_OPENSSL_WITH_RC2
+  OPENSSL_OPTIONS += no-rc2
 endif
 
 ifeq ($(CONFIG_OPENSSL_OPTIMIZE_SPEED),y)
@@ -199,21 +257,18 @@ define Build/Configure
 			$(TARGET_CPPFLAGS) \
 			$(TARGET_LDFLAGS) -ldl \
 			$(if $(CONFIG_OPENSSL_OPTIMIZE_SPEED),,-DOPENSSL_SMALL_FOOTPRINT) \
-			-DOPENSSL_NO_ASYNC \
-			$(OPENSSL_NO_CIPHERS) \
 			$(OPENSSL_OPTIONS) \
 	)
 endef
 
-TARGET_CFLAGS += $(FPIC) -I$(CURDIR)/include -ffunction-sections -fdata-sections
-TARGET_LDFLAGS += -Wl,--gc-sections
+TARGET_CFLAGS += $(FPIC) -I$(CURDIR)/include
 
 define Build/Compile
 	+$(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) \
 		CROSS_COMPILE="$(TARGET_CROSS)" \
 		CC="$(TARGET_CC)" \
 		ASFLAGS="$(TARGET_ASFLAGS) -I$(PKG_BUILD_DIR)/crypto -c" \
-		AR="$(TARGET_CROSS)ar r" \
+		AR="$(TARGET_CROSS)ar" \
 		RANLIB="$(TARGET_CROSS)ranlib" \
 		OPENWRT_OPTIMIZATION_FLAGS="$(TARGET_CFLAGS)" \
 		$(OPENSSL_MAKEFLAGS) \

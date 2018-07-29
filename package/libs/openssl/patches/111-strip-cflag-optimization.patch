@@ -1,0 +1,34 @@
+diff --git a/Configurations/10-main.conf b/Configurations/10-main.conf
+index 54f609d..9e8b78e 100644
+--- a/Configurations/10-main.conf
++++ b/Configurations/10-main.conf
+@@ -176,14 +176,14 @@ my %targets = (
+         inherit_from     => [ "BASE_unix" ],
+         CC               => "gcc",
+         CFLAGS           => picker(debug   => "-O0 -g",
+-                                   release => "-O3"),
++                                   release => ""),
+         thread_scheme    => "(unknown)",
+         bn_ops           => "BN_LLONG",
+     },
+     "cc" => {
+         inherit_from     => [ "BASE_unix" ],
+         CC               => "cc",
+-        CFLAGS           => "-O",
++        CFLAGS           => "",
+         thread_scheme    => "(unknown)",
+     },
+ 
+@@ -653,10 +653,10 @@ my %targets = (
+         CXX              => "g++",
+         CFLAGS           => picker(default => "-Wall",
+                                    debug   => "-O0 -g",
+-                                   release => "-O3"),
++                                   release => ""),
+         CXXFLAGS         => picker(default => "-Wall",
+                                    debug   => "-O0 -g",
+-                                   release => "-O3"),
++                                   release => ""),
+         cflags           => threads("-pthread"),
+         cxxflags         => combine("-std=c++11", threads("-pthread")),
+         lib_cppflags     => "-DOPENSSL_USE_NODELETE",

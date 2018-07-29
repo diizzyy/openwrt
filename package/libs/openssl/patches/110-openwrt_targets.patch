@@ -1,7 +1,7 @@
 --- /dev/null
 +++ b/Configurations/25-openwrt.conf
 @@ -0,0 +1,23 @@
-+%targets = (
++my %targets = (
 +    "linux-x86_64-openwrt" => {
 +        inherit_from    => [ "linux-x86_64" ],
 +	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
