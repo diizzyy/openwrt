@@ -1,6 +1,23 @@
+From bc6f937968db920efe48db147d9114a827ac48f5 Mon Sep 17 00:00:00 2001
+From: Daniel Engberg <daniel.engberg.lists@pyret.net>
+Date: Mon, 13 Aug 2018 01:32:35 +0200
+Subject: [PATCH] Fix mips64 and generic support
+
+Add mips64 (Octeon) support
+Fix generic support
+
+Signed-off-by: Daniel Engberg <daniel.engberg.lists@pyret.net>
+---
+ Configurations/25-openwrt.conf | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+ create mode 100644 Configurations/25-openwrt.conf
+
+diff --git a/Configurations/25-openwrt.conf b/Configurations/25-openwrt.conf
+new file mode 100644
+index 0000000..7687c1b
 --- /dev/null
 +++ b/Configurations/25-openwrt.conf
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,27 @@
 +my %targets = (
 +    "linux-x86_64-openwrt" => {
 +        inherit_from    => [ "linux-x86_64" ],
@@ -18,9 +35,16 @@
 +        inherit_from    => [ "linux-mips32" ],
 +	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
 +    },
++    "linux-mips64-openwrt" => {
++        inherit_from    => [ "linux64-mips64" ],
++	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
++    },
 +    "linux-generic-openwrt" => {
-+        inherit_from    => [ "linux-generic" ],
++        inherit_from    => [ "linux-generic32" ],
 +	cflags		=> add("\$(OPENWRT_OPTIMIZATION_FLAGS)"),
 +    },
 +);
 +
+-- 
+2.11.0
+

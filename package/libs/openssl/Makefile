@@ -223,7 +223,7 @@ ifndef CONFIG_OPENSSL_WITH_RC2
 endif
 
 ifeq ($(CONFIG_OPENSSL_OPTIMIZE_SPEED),y)
-  TARGET_CFLAGS := $(filter-out -Os,$(TARGET_CFLAGS)) -O3
+  TARGET_CFLAGS := $(filter-out -O%,$(TARGET_CFLAGS)) -O3
 endif
 
 ifeq ($(CONFIG_x86_64),y)
@@ -237,6 +237,8 @@ else
     OPENSSL_TARGET:=linux-aarch64-openwrt
   else ifeq ($(CONFIG_arm)$(CONFIG_armeb),y)
     OPENSSL_TARGET:=linux-armv4-openwrt
+  else ifeq ($(CONFIG_mips64),y)
+   OPENSSL_TARGET:=linux-mips64-openwrt
   else
     OPENSSL_TARGET:=linux-generic-openwrt
     OPENSSL_OPTIONS+=no-perlasm
