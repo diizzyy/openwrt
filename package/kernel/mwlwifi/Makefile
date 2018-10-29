@@ -20,7 +20,6 @@ PKG_SOURCE_VERSION:=fac1da8da63197e0e491eebebe17b37ce1da271f
 PKG_MIRROR_HASH:=95a6a818c1da0839eec789b7f7f6f8b5adf9ed2fc4e7006866c7fb7edde3c76f
 
 PKG_MAINTAINER:=Imre Kaloz <kaloz@openwrt.org>
-PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/kernel.mk
 include $(INCLUDE_DIR)/package.mk
