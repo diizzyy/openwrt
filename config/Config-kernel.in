@@ -87,7 +87,7 @@ config KERNEL_PROFILING
 
 config KERNEL_TASKSTATS
 	bool "Compile the kernel with task resource/io statistics and accounting"
-	default n
+	default y
 	help
 	  Enable the collection and publishing of task/io statistics and
 	  accounting.  Enable this option to enable i/o monitoring in system
