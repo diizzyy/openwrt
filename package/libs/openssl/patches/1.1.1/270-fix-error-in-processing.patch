@@ -1,0 +1,33 @@
+From 729033c64147312dc1977796808982597a597458 Mon Sep 17 00:00:00 2001
+From: Richard Levitte <levitte@openssl.org>
+Date: Wed, 12 Dec 2018 09:27:48 +0100
+Subject: [PATCH] Fix error in processing $target{enable}
+
+Reviewed-by: Tim Hudson <tjh@openssl.org>
+(Merged from https://github.com/openssl/openssl/pull/7885)
+
+(cherry picked from commit 7a8a35ff0ce0c25a36b494a4c7e3f5f390679e6e)
+---
+ Configure | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Configure b/Configure
+index 28f6eb746f6..b6c94658756 100755
+--- a/Configure
++++ b/Configure
+@@ -1110,13 +1110,13 @@ foreach my $feature (@{$target{disable}}) {
+     $disabled{$feature} = 'config';
+ }
+ foreach my $feature (@{$target{enable}}) {
+-    if ("default" eq ($disabled{$_} // "")) {
++    if ("default" eq ($disabled{$feature} // "")) {
+         if (exists $deprecated_disablables{$feature}) {
+             warn "***** config $target enables deprecated feature $feature\n";
+         } elsif (!grep { $feature eq $_ } @disablables) {
+             die "***** config $target enables unknown feature $feature\n";
+         }
+-        delete $disabled{$_};
++        delete $disabled{$feature};
+     }
+ }
+ 

@@ -1,0 +1,28 @@
+From faafe140a856ecbe743a0533a2d7117ece040f29 Mon Sep 17 00:00:00 2001
+From: Mansour Ahmadi <m.ahmadi@northeastern.edu>
+Date: Tue, 11 Dec 2018 16:18:21 -0500
+Subject: [PATCH] Add missing OPENSSL_clear_free before using ec->key
+
+Fixes #7657
+
+Reviewed-by: Nicola Tuveri <nic.tuv@gmail.com>
+Reviewed-by: Matt Caswell <matt@openssl.org>
+(Merged from https://github.com/openssl/openssl/pull/7877)
+
+(cherry picked from commit 4128136a28c3b7d3878daed728c49f18eb950adc)
+---
+ crypto/cms/cms_pwri.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/crypto/cms/cms_pwri.c b/crypto/cms/cms_pwri.c
+index eac9c2fc862..26e3bdcf9e4 100644
+--- a/crypto/cms/cms_pwri.c
++++ b/crypto/cms/cms_pwri.c
+@@ -373,6 +373,7 @@ int cms_RecipientInfo_pwri_crypt(CMS_ContentInfo *cms, CMS_RecipientInfo *ri,
+             goto err;
+         }
+ 
++        OPENSSL_clear_free(ec->key, ec->keylen);
+         ec->key = key;
+         ec->keylen = keylen;
+ 
