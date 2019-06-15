@@ -27,8 +27,8 @@ GCC_DMPVER_STRING := $(shell $(CC) -dumpversion | $(GCC_DMPVER_GREPCMD))
 ifneq ($(GCC_DMPVER_STRING),)
   ifeq ($(CONFIG_CCACHE),y)
     $(info GCC version less than 6.0 detected, disabling CCACHE)
-    HOST_CONFIGURE_VARS:=$(filter-out CC=% gcc%",$(HOST_CONFIGURE_VARS)) CC="$(CC)"
-    HOST_CONFIGURE_VARS:=$(filter-out CXX=% g++%",$(HOST_CONFIGURE_VARS)) CXX="$(CXX)"
+    HOST_CONFIGURE_VARS:=$(filter-out CC=% gcc%",$(HOST_CONFIGURE_VARS)) CC="$(HOSTCC_NOCACHE)"
+    HOST_CONFIGURE_VARS:=$(filter-out CXX=% g++%",$(HOST_CONFIGURE_VARS)) CXX="$(HOSTCXX_NOCACHE)"
       else
     $(info GCC version greater or equal to 6.0 detected, no workaround set for CCACHE)
   endif
