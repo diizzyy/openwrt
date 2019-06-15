@@ -23,7 +23,7 @@ include $(INCLUDE_DIR)/host-build.mk
 # Workaround for GCC versions below 6.X and ccache
 # Reference: https://github.com/openwrt/openwrt/pull/1929
 GCC_DMPVER_GREPCMD := grep -E '^(4\.[8-9]|[5]\.?)'
-GCC_DMPVER_STRING := $(shell $(CC) -dumpversion | $(GCC_DMPVER_GREPCMD))
+GCC_DMPVER_STRING := $(shell $(HOSTCC_NOCACHE) -dumpversion | $(GCC_DMPVER_GREPCMD))
 ifneq ($(GCC_DMPVER_STRING),)
   ifeq ($(CONFIG_CCACHE),y)
     $(info GCC version less than 6.0 detected, disabling CCACHE)
