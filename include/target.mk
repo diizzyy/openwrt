@@ -161,7 +161,7 @@ ifeq ($(DUMP),1)
   ifneq ($(findstring cortex-a,$(CPU_TYPE)),)
     CPU_CFLAGS = -O2 -pipe
   else
-    CPU_CFLAGS = -Os -pipe
+    CPU_CFLAGS = -O2 -pipe
   endif
   ifneq ($(findstring mips,$(ARCH)),)
     ifneq ($(findstring mips64,$(ARCH)),)
